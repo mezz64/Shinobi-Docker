@@ -21,9 +21,9 @@ ENV ADMIN_USER=admin@shinobi.video \
     MYSQL_USER=majesticflame \
     MYSQL_PASSWORD=password \
     MYSQL_HOST=localhost \
-    MYSQL_DATABASE=ccio \
-    MYSQL_ROOT_PASSWORD=blubsblawoot \
-    MYSQL_ROOT_USER=root
+    MYSQL_DATABASE=ccio
+#    MYSQL_ROOT_PASSWORD=blubsblawoot \
+#    MYSQL_ROOT_USER=root
 
 
 # Create the custom configuration dir
@@ -61,8 +61,8 @@ apk add --no-cache   --virtual \
   tar \ 
   x264
 
-RUN apk add --update --no-cache python make ffmpeg pkgconfig git mariadb mariadb-client wget tar xz openrc
-RUN sed -ie "s/^bind-address\s*=\s*127\.0\.0\.1$/#bind-address = 0.0.0.0/" /etc/mysql/my.cnf
+RUN apk add --update --no-cache python make ffmpeg pkgconfig git mariadb-client wget tar xz openrc
+# RUN sed -ie "s/^bind-address\s*=\s*127\.0\.0\.1$/#bind-address = 0.0.0.0/" /etc/mysql/my.cnf
 
 # Install ffmpeg static build version from cdn.shinobi.video
 RUN wget https://cdn.shinobi.video/installers/ffmpeg-release-64bit-static.tar.xz
@@ -97,7 +97,7 @@ COPY ./config/super.sample.json /opt/shinobi/super.sample.json
 
 VOLUME ["/opt/shinobi/videos"]
 VOLUME ["/config"]
-VOLUME ["/var/lib/mysql"]
+#VOLUME ["/var/lib/mysql"]
 
 EXPOSE 8080
 

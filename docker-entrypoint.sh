@@ -28,55 +28,6 @@ if [ -n "${ADMIN_PASSWORD}" ]; then
     echo "Hash admin password ..."
     ADMIN_PASSWORD_MD5=$(echo -n "${ADMIN_PASSWORD}" | md5sum | sed -e 's/  -$//')
 fi
-echo "MariaDB Directory ..."
-ls /var/lib/mysql
-
-if [ ! -f /var/lib/mysql/ibdata1 ]; then
-    echo "Installing MariaDB ..."
-    mysql_install_db --user=mysql --silent
-fi
-echo "Starting MariaDB ..."
-/usr/bin/mysqld_safe --user=mysql &
-sleep 5s
-
-chown -R mysql /var/lib/mysql
-
-if [ ! -f /var/lib/mysql/ibdata1 ]; then
-    mysql -u root --password="" <<-EOSQL
-SET @@SESSION.SQL_LOG_BIN=0;
-USE mysql;
-DELETE FROM mysql.user ;
-DROP USER IF EXISTS 'root'@'%','root'@'localhost','${DB_USER}'@'localhost','${DB_USER}'@'%';
-CREATE USER 'root'@'%' IDENTIFIED BY '${DB_PASS}' ;
-CREATE USER 'root'@'localhost' IDENTIFIED BY '${DB_PASS}' ;
-CREATE USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASS}' ;
-CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}' ;
-GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION ;
-GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION ;
-GRANT ALL PRIVILEGES ON *.* TO '${DB_USER}'@'%' WITH GRANT OPTION ;
-GRANT ALL PRIVILEGES ON *.* TO '${DB_USER}'@'localhost' WITH GRANT OPTION ;
-DROP DATABASE IF EXISTS test ;
-FLUSH PRIVILEGES ;
-EOSQL
-fi
-
-# Create MySQL database if it does not exists
-if [ -n "${MYSQL_HOST}" ]; then
-    echo "Wait for MySQL server" ...
-    while ! mysqladmin ping -h"$MYSQL_HOST"; do
-        sleep 1
-    done
-fi
-
-
-echo "Setting up MySQL database if it does not exists ..."
-
-echo "Create database schema if it does not exists ..."
-mysql -e "source /opt/shinobi/sql/framework.sql" || true
-
-echo "Create database user if it does not exists ..."
-mysql -e "source /opt/shinobi/sql/user.sql" || true
-
 
 echo "Set keys for CRON and PLUGINS from environment variables ..."
 sed -i -e 's/"key":"73ffd716-16ab-40f4-8c2e-aecbd3bc1d30"/"key":"'"${CRON_KEY}"'"/g' \
